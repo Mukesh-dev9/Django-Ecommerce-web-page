@@ -46,7 +46,7 @@ class Product_list(generics.ListCreateAPIView):
      
     # Delete all in models
     def delete(self,request,*args,**kwargs):
-        Products.object.all.delete()
+        Products.objects.all().delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 # Update(put,patch), delete 

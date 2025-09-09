@@ -23,12 +23,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
+# Fallback for local development if env var is missing
+SECRET_KEY = os.environ.get("SECRET_KEY", "insecure-dev-secret-key-change-me")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG","False").lower()=="true"
+DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
+allowed_hosts_env = os.environ.get("ALLOWED_HOSTS")
+# Default to localhost and Render wildcard if not provided
+ALLOWED_HOSTS = (
+    allowed_hosts_env.split(" ")
+    if allowed_hosts_env
+    else [
+        "127.0.0.1",
+        "localhost",
+        ".onrender.com",
+    ]
+)
 import os 
 HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN")
 
@@ -89,8 +100,10 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-database_url=os.environ.get("DATABASE_URL")
-DATABASES["default"]=dj_database_url.parse(database_url)
+# Use DATABASE_URL if provided (e.g., on Render), otherwise keep sqlite
+database_url = os.environ.get("DATABASE_URL")
+if database_url:
+    DATABASES["default"] = dj_database_url.parse(database_url, conn_max_age=600)
 #postgresql://django_ecom_0w2d_user:KOj0nOprhpTx8cGWKvBa5sBWo9pHGRxa@dpg-d2vso6n5r7bs73apfiog-a.oregon-postgres.render.com/django_ecom_0w2d
 
 
