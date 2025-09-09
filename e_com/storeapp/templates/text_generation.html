@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hugging Face Text Generation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Text Generation with Hugging Face</h1>
+        <form id="textGenerationForm" class="space-y-4">
+            <div class="mb-4">
+                <label for="prompt" class="block text-gray-700 text-sm font-bold mb-2">Enter your prompt:</label>
+                <textarea id="prompt" name="prompt" rows="4" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline resize-none" placeholder="e.g., Write a short story about a robot exploring Mars..."></textarea>
+            </div>
+            <div class="mb-6">
+                <label for="model" class="block text-gray-700 text-sm font-bold mb-2">Select Model (optional):</label>
+                <input type="text" id="model" name="model" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g., gpt2, distilbert-base-uncased">
+                <p class="text-xs text-gray-500 mt-1">Leave empty for default (gpt2).</p>
+            </div>
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline w-full transform transition duration-300 hover:scale-105">
+                Generate Text
+            </button>
+        </form>
+        <div id="loading" class="mt-6 text-center text-blue-600 hidden">
+            Generating... Please wait.
+        </div>
+        <div id="responseContainer" class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Generated Text:</h3>
+            <p id="generatedText" class="text-gray-700 whitespace-pre-wrap"></p>
+        </div>
+        <div id="errorContainer" class="mt-6 p-4 bg-red-100 rounded-lg border border-red-400 text-red-700 hidden">
+            <h3 class="text-lg font-semibold mb-2">Error:</h3>
+            <p id="errorMessage" class="text-red-700"></p>
+        </div>
+
+        <script>
+            document.getElementById('textGenerationForm').addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                const prompt = document.getElementById('prompt').value;
+                const model = document.getElementById('model').value;
+                const loadingDiv = document.getElementById('loading');
+                const responseContainer = document.getElementById('responseContainer');
+                const generatedText = document.getElementById('generatedText');
+                const errorContainer = document.getElementById('errorContainer');
+                const errorMessage = document.getElementById('errorMessage');
+
+                // Reset previous states
+                loadingDiv.classList.add('hidden');
+                responseContainer.classList.add('hidden');
+                errorContainer.classList.add('hidden');
+                generatedText.textContent = '';
+                errorMessage.textContent = '';
+
+                if (!prompt.trim()) {
+                    errorMessage.textContent = "Please enter a prompt to generate text.";
+                    errorContainer.classList.remove('hidden');
+                    return;
+                }
+
+                loadingDiv.classList.remove('hidden');
+
+                try {
+                    const response = await fetch('/ai/generate-text/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // In a real Django app, you'd include CSRF token here
+                            // 'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({ prompt: prompt, model: model })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.status === 'success') {
+                        generatedText.textContent = result.response;
+                        responseContainer.classList.remove('hidden');
+                    } else {
+                        errorMessage.textContent = result.message || 'An unknown error occurred.';
+                        errorContainer.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    errorMessage.textContent = `Network error: ${error.message}`;
+                    errorContainer.classList.remove('hidden');
+                } finally {
+                    loadingDiv.classList.add('hidden');
+                }
+            });
+
+            // Helper function to get CSRF token (needed for production Django forms)
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        </script>
+    </div>
+</body>
+</html>

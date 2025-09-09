@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block demopage%}
+{% if massages %}
+            {% for message in massages %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+  <strong>{{message}}</strong>
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+    </div>
+            {% endfor %}
+        {% endif %}
+<h1>serialize</h1>
+
+{% for p in products reversed %}
+<ul>
+<b><li
+    {% if forloop.first %}
+     style='background-color:lightblue;width:300px;'
+{% endif %}
+    
+    
+    >{{p.name}}</li></b>
+
+<li>{{p.price}}</li>
+<li>{{p.category}}</li>
+</ul>
+{% endfor %}
+{% endblock%}
