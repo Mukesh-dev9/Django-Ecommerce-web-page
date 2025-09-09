@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: e-com
+    env: python
+    rootDir: e_com
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn e_com.wsgi
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.0
+    postDeployCommand: python manage.py migrate
