@@ -2,7 +2,7 @@ services:
   - type: web
     name: e-com
     env: python
-    rootDir: e_com
+    rootDir: E_compage
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn e_com.wsgi
     autoDeploy: true
